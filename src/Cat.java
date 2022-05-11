@@ -1,3 +1,4 @@
+
 public class Cat extends Thread{
     boolean alive = true;
     static int i = 1;
@@ -16,6 +17,13 @@ public class Cat extends Thread{
     public void run() {
         while(alive){
             room.catGetIn(this);
+            try {
+                sleep(3000);
+            }
+            catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+            room.catEating(this);
 
         }
         System.out.println("cat " + getCatID() + " has died from hunger!");

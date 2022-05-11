@@ -23,6 +23,14 @@ public class Mice extends Thread {
     public void run() {
         while(alive){
             room.miceGetIn(this);
+            System.out.println("Mice "+ getMiceID()+ " is eating!");
+            try{
+                sleep(3000);
+            }
+            catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+            room.miceGetOut(this);
         }
     }
 }
