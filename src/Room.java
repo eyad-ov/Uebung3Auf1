@@ -1,16 +1,57 @@
 import java.util.ArrayList;
 
 public class Room {
+    int catsNum;
+    int miceNum;
+
     private boolean catInside = false;
-    private ArrayList<Mice> miceInRoom = new ArrayList<>();
+    private ArrayList<Mouse> miceInRoom = new ArrayList<>();
 
-    public synchronized boolean getCatInside () { return catInside;}
-    public synchronized void setCatInside(boolean b){catInside = b;}
-    public synchronized boolean getMiceInside(){return !miceInRoom.isEmpty();}
-    public synchronized void setMiceInside(Mice mice){miceInRoom.add(mice);}
-    public synchronized void setMiceOutside(Mice mice){miceInRoom.remove(mice);}
+    public Room(int n, int m){
+        catsNum =n;
+        miceNum =m;
+    }
 
-    public synchronized void miceGetIn(Mice mice){
+    public synchronized void catDied(){
+        catsNum--;
+    }
+
+    public synchronized void mouseDied(){
+        miceNum--;
+    }
+
+    public synchronized boolean isGameOver(){
+        if(catsNum == 0 || miceNum ==0){
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean getCatInside () {
+        return catInside;
+    }
+
+    public synchronized void setCatInside(boolean b){
+        catInside = b;
+    }
+
+    public synchronized boolean getMiceInside(){
+        return !miceInRoom.isEmpty();
+    }
+
+    public synchronized void setMouseInside(Mouse mouse){
+        miceInRoom.add(mouse);
+    }
+
+    public synchronized void setMouseOutside(Mouse mouse){
+        miceInRoom.remove(mouse);
+    }
+
+    public synchronized boolean mouseGetIn(Mouse mouse){
+        if(isGameOver()){
+            notifyAll();
+            return false;
+        }
         while(getCatInside()){
             try{
                 wait();
@@ -20,24 +61,22 @@ public class Room {
             }
 
         }
-        System.out.println("Mice "+ mice.getMiceID()+ " gets in the room!");
-        setMiceInside(mice);
+        System.out.println("mouse "+ mouse.getMouseID()+ " gets in the room!");
+        setMouseInside(mouse);
         notifyAll();
-
+        return true;
 
     }
-    public synchronized void miceGetOut(Mice mice){
-        if(mice.getAlive()){
-            System.out.println("Mice "+ mice.getMiceID()+ " gets out of the room!");
-            setMiceOutside(mice);
-        }
-        else{
-            System.out.println("Mice "+ mice.getMiceID()+ " was eaten!");
+    public synchronized void mouseGetOut(Mouse mouse){
+        if(mouse.getAlive()){
+            System.out.println("mouse "+ mouse.getMouseID()+ " gets out of the room!");
+            setMouseOutside(mouse);
         }
     }
 
-    public synchronized void catGetIn(Cat cat){
-        while(!getMiceInside() || getCatInside()){
+    public synchronized boolean catGetIn(Cat cat){
+
+        while(!isGameOver() && (!getMiceInside() || getCatInside())){
             try{
                 wait();
             }
@@ -46,15 +85,23 @@ public class Room {
             }
 
         }
-        System.out.println("Cat "+ cat.getCatID()+ " gets in the room!");
-        setCatInside(true);
+        if(!isGameOver()){
+            System.out.println("Cat "+ cat.getCatID()+ " gets in the room!");
+            setCatInside(true);
+            return true;
+        }
+        notifyAll();
+        return false;
 
     }
 
     public synchronized void catEating(Cat cat) {
-        if(miceInRoom.size()!=0){
+        if(getMiceInside()){
+            System.out.println("Cat "+ cat.getCatID()+ " ate the mouse " + miceInRoom.get(0).getMouseID());
             miceInRoom.get(0).getKilled();
-            System.out.println("Cat "+ cat.getCatID()+ " ate the mice " + miceInRoom.get(0).getMiceID());
+            setMouseOutside(miceInRoom.get(0));
+            mouseDied();
+
         }
         System.out.println("Cat "+ cat.getCatID()+ " gets out of the room!");
         setCatInside(false);
