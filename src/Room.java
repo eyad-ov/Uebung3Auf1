@@ -13,10 +13,12 @@ public class Room {
     }
 
     public synchronized void catDied(){
+
         catsNum--;
     }
 
     public synchronized void mouseDied(){
+
         miceNum--;
     }
 
@@ -28,18 +30,22 @@ public class Room {
     }
 
     public synchronized boolean getCatInside () {
+
         return catInside;
     }
 
     public synchronized void setCatInside(boolean b){
+
         catInside = b;
     }
 
     public synchronized boolean getMiceInside(){
+
         return !miceInRoom.isEmpty();
     }
 
     public synchronized void setMouseInside(Mouse mouse){
+
         miceInRoom.add(mouse);
     }
 
@@ -48,11 +54,8 @@ public class Room {
     }
 
     public synchronized boolean mouseGetIn(Mouse mouse){
-        if(isGameOver()){
-            notifyAll();
-            return false;
-        }
-        while(getCatInside()){
+
+        while(!isGameOver() && getCatInside()){
             try{
                 wait();
             }
@@ -61,10 +64,13 @@ public class Room {
             }
 
         }
-        System.out.println("mouse "+ mouse.getMouseID()+ " gets in the room!");
-        setMouseInside(mouse);
-        notifyAll();
-        return true;
+        if(!isGameOver()){
+            System.out.println("mouse "+ mouse.getMouseID()+ " gets in the room!");
+            setMouseInside(mouse);
+            notifyAll();
+            return true;
+        }
+        return false;
 
     }
     public synchronized void mouseGetOut(Mouse mouse){
@@ -95,17 +101,20 @@ public class Room {
 
     }
 
-    public synchronized void catEating(Cat cat) {
+    public synchronized boolean catEating(Cat cat) {
+        boolean ate = false;
         if(getMiceInside()){
             System.out.println("Cat "+ cat.getCatID()+ " ate the mouse " + miceInRoom.get(0).getMouseID());
             miceInRoom.get(0).getKilled();
             setMouseOutside(miceInRoom.get(0));
             mouseDied();
+            ate=true;
 
         }
         System.out.println("Cat "+ cat.getCatID()+ " gets out of the room!");
         setCatInside(false);
         notifyAll();
+        return ate;
     }
 
 }

@@ -2,8 +2,6 @@ public class Cat extends Thread{
 
     boolean alive = true;
     boolean game = true;
-    int time = 0;
-    int dieTime = 10000;
     int k;
     int m;
     static int i = 1;
@@ -22,18 +20,35 @@ public class Cat extends Thread{
     }
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
+        long time = 0;
+        boolean hasEaten = false;
         while(alive && game){
             if(room.catGetIn(this)) {
 
                 try {
-                    sleep(k*1000); // add this everytime
+                    sleep(k*1000);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                room.catEating(this);// must know if cat has eaten a mouse
+                hasEaten = room.catEating(this);
+
             }
+
             else{
                 game=false;
+            }
+
+            if(hasEaten){
+                time = 0;
+                startTime = System.currentTimeMillis();
+            }
+
+            else{
+                time = System.currentTimeMillis()-startTime;
+                if(time > m*1000){
+                    alive = false;
+                }
             }
         }
         if(!alive){

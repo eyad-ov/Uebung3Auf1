@@ -1,18 +1,21 @@
 public class Mouse extends Thread {
-    boolean alive = true;
+    boolean mouseAlive = true;
     boolean game= true;
     static int i = 1;
     int n;
     private int mouseID;
     Room room = null;
 
-    public boolean getAlive(){
-        return alive;
+
+
+    public synchronized boolean getAlive(){
+        return mouseAlive;
     }
 
-    public void getKilled(){
-        alive = false;
+    public synchronized void getKilled(){
+        mouseAlive = false;
     }
+
     public int getMouseID() {
         return mouseID;
     }
@@ -24,7 +27,7 @@ public class Mouse extends Thread {
     }
     @Override
     public void run() {
-        while(alive && game){
+        while(getAlive() && game){
 
             if(room.mouseGetIn(this)){
                 System.out.println("mouse "+ getMouseID()+ " is eating!");
